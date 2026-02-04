@@ -107,6 +107,10 @@ pub struct FroniusStorageControllerData {
     pub rel_charge: f64,
     #[serde(rename = "Voltage_DC")]
     pub voltage_dc: f64,
+    #[serde(rename = "Temperature_Cell")]
+    pub temperature_cell: f64,
+    #[serde(rename = "Enable")]
+    pub enable: u32,
 }
 
 #[derive(Debug, Deserialize, Clone)]

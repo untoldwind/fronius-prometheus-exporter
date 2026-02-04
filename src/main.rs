@@ -61,9 +61,31 @@ fn update_storage(storage: FroniusStorageData) {
         gauge!("fronius_storage_current_dc", &labels).set(device_data.controller.current_dc);
         gauge!("fronius_storage_rel_charge", &labels).set(device_data.controller.rel_charge);
         gauge!("fronius_storage_voltage_dc", &labels).set(device_data.controller.voltage_dc);
+        gauge!("fronius_storage_temperature_cell", &labels)
+            .set(device_data.controller.temperature_cell);
+        gauge!("fronius_storage_enable", &labels).set(device_data.controller.enable);
     }
 }
 
 fn update_inverter(inverter: FroniusCommonInverterData) {
     gauge!("fronius_inverter_total_energy",).set(inverter.total_energy.value.unwrap_or_default());
+    gauge!("fronius_inverter_voltage_ac").set(inverter.uac.value.unwrap_or_default());
+    gauge!("fronius_inverter_current_ac").set(inverter.iac.value.unwrap_or_default());
+    gauge!("fronius_inverter_power_ac").set(inverter.pac.value.unwrap_or_default());
+    gauge!("fronius_inverter_voltage_dc", "string" => "1")
+        .set(inverter.udc.value.unwrap_or_default());
+    gauge!("fronius_inverter_current_dc", "string" => "1")
+        .set(inverter.idc.value.unwrap_or_default());
+    gauge!("fronius_inverter_voltage_dc", "string" => "2")
+        .set(inverter.udc_2.value.unwrap_or_default());
+    gauge!("fronius_inverter_current_dc", "string" => "2")
+        .set(inverter.idc_2.value.unwrap_or_default());
+    gauge!("fronius_inverter_voltage_dc", "string" => "3")
+        .set(inverter.udc_3.value.unwrap_or_default());
+    gauge!("fronius_inverter_current_dc", "string" => "3")
+        .set(inverter.idc_3.value.unwrap_or_default());
+    gauge!("fronius_inverter_voltage_dc", "string" => "4")
+        .set(inverter.udc_4.value.unwrap_or_default());
+    gauge!("fronius_inverter_current_dc", "string" => "4")
+        .set(inverter.idc_4.value.unwrap_or_default());
 }
