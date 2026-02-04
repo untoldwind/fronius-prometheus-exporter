@@ -1,4 +1,5 @@
 use clap::Parser;
+use fronius::FroniusMeterData;
 use log::{debug, error};
 use metrics::gauge;
 use metrics_exporter_prometheus::PrometheusBuilder;
@@ -39,6 +40,11 @@ async fn main() -> anyhow::Result<()> {
             Ok(inverter) => update_inverter(inverter),
             Err(err) => error!("{}", err),
         };
+
+        match fronius_client.get_meter_data().await {
+            Ok(meter) => update_meter(meter),
+            Err(err) => error!("{}", err),
+        }
 
         tokio::time::sleep(Duration::from_secs(args.fronius_update_sec as u64)).await;
     }
@@ -88,4 +94,13 @@ fn update_inverter(inverter: FroniusCommonInverterData) {
         .set(inverter.udc_4.value.unwrap_or_default());
     gauge!("fronius_inverter_current_dc", "string" => "4")
         .set(inverter.idc_4.value.unwrap_or_default());
+}
+
+fn update_meter(meter: FroniusMeterData) {
+    for (device_id, device_data) in meter.0 {
+        let labels = [("device_id", device_id)];
+        gauge!("fronius_meter_power_real", &labels).set(device_data.power_real);
+        gauge!("fronius_meter_energy_real_consumed", &labels).set(device_data.energy_real_consumed);
+        gauge!("fronius_meter_energy_real_produced", &labels).set(device_data.energy_real_produced);
+    }
 }

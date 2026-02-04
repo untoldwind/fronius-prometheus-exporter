@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::fmt;
 
 #[derive(Debug, Deserialize)]
@@ -122,3 +122,17 @@ pub struct FroniusStorageDeviceData {
 #[derive(Debug, Deserialize, Clone)]
 #[serde(transparent)]
 pub struct FroniusStorageData(pub HashMap<String, FroniusStorageDeviceData>);
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct FroniusMeterDeviceData {
+    #[serde(rename = "PowerReal_P_Sum")]
+    pub power_real: f64,
+    #[serde(rename = "EnergyReal_WAC_Sum_Consumed")]
+    pub energy_real_consumed: f64,
+    #[serde(rename = "EnergyReal_WAC_Sum_Produced")]
+    pub energy_real_produced: f64,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(transparent)]
+pub struct FroniusMeterData(pub HashMap<String, FroniusMeterDeviceData>);

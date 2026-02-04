@@ -1,7 +1,8 @@
 use std::time::Duration;
 
-use super::model::{
-    FroniusCommonInverterData, FroniusPowerFlowData, FroniusResponse, FroniusStorageData,
+use super::{
+    FroniusMeterData,
+    model::{FroniusCommonInverterData, FroniusPowerFlowData, FroniusResponse, FroniusStorageData},
 };
 use anyhow::Result;
 use reqwest::{Client, Method, StatusCode};
@@ -54,6 +55,11 @@ impl FroniusClient {
 
     pub async fn get_storage_data(&self) -> Result<FroniusStorageData> {
         self.execute_request("/solar_api/v1/GetStorageRealtimeData.cgi")
+            .await
+    }
+
+    pub async fn get_meter_data(&self) -> Result<FroniusMeterData> {
+        self.execute_request("/solar_api/v1/GetMeterRealtimeData.cgi")
             .await
     }
 }
