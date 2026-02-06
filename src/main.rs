@@ -1,24 +1,32 @@
+use anyhow::{Result, anyhow};
 use clap::Parser;
-use fronius::FroniusMeterData;
-use log::{debug, error};
+use log::{debug, error, info};
 use metrics::gauge;
 use metrics_exporter_prometheus::PrometheusBuilder;
 use std::{net::SocketAddrV4, time::Duration};
 
-use crate::fronius::{
-    FroniusClient, FroniusCommonInverterData, FroniusPowerFlowData, FroniusStorageData,
+use crate::{
+    cli::HostDetect,
+    fronius::{
+        FroniusClient, FroniusCommonInverterData, FroniusMeterData, FroniusPowerFlowData,
+        FroniusStorageData, mdns,
+    },
 };
 
 mod cli;
 mod fronius;
 
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
+async fn main() -> Result<()> {
     env_logger::init();
 
-    let args = cli::Args::parse();
+    let args = cli::CliArgs::parse();
 
-    let fronius_client = FroniusClient::new(&args.fronius_host, args.fronius_timeout_sec)?;
+    let host = find_fronius_host(args.fronius_detect).await?;
+    info!("Collect metrics from {}", host);
+
+    let fronius_client = FroniusClient::new(&host, args.fronius_timeout_sec)?;
+
     PrometheusBuilder::new()
         .with_http_listener(args.metric_bind.parse::<SocketAddrV4>()?)
         .install()?;
@@ -48,6 +56,17 @@ async fn main() -> anyhow::Result<()> {
 
         tokio::time::sleep(Duration::from_secs(args.fronius_update_sec as u64)).await;
     }
+}
+
+async fn find_fronius_host(fronius_detect: HostDetect) -> Result<String> {
+    if let Some(fronius_host) = fronius_detect.fronius_host {
+        return Ok(fronius_host);
+    }
+    if fronius_detect.fronius_zeroconf {
+        return mdns::find_fronius_server();
+    }
+
+    Err(anyhow!("Expect either hostname or zeroconf"))
 }
 
 fn update_power_flow(power_flow: FroniusPowerFlowData) {

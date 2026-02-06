@@ -37,7 +37,7 @@ impl FroniusClient {
             status => Err(anyhow::format_err!(
                 "Fronius: {} {}",
                 status.as_u16(),
-                status.to_string()
+                status
             )),
         }
     }
